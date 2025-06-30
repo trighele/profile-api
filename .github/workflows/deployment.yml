@@ -7,8 +7,11 @@ on:
 
 env:
   IMAGE_NAME: profile-api
+  SERVICE_NAME: profile-api
   DEPLOYMENT_NAME: profile-api-deployment
   CONTAINER_NAME: profile-api-container
+  KUBE_PORT: 3011
+  APP_PORT: 4011
 
 jobs:
   build-and-deploy-local:
@@ -48,3 +51,11 @@ jobs:
           
           kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}
           kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
+
+      - name: Kill Previous Port-Forward
+        run: |
+          pkill -f "kubectl port-forward --address 0.0.0.0 service/${{ env.SERVICE_NAME }}" || true
+      
+      - name: Start Port-Forward in Background
+        run: |
+          nohup kubectl port-forward service/${{ env.SERVICE_NAME_NAME }} ${{ env.APP_PORT }}:${{ env.KUBE_PORT }} > port-forward.log 2>&1 &
