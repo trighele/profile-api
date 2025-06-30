@@ -7,7 +7,7 @@ on:
 
 env:
   IMAGE_NAME: profile-api
-  DEPLOYMENT_NAME: profile-api-deployment
+  DEPLOYMENT_NAME: profile-api
 
 jobs:
   build-and-deploy-local:
