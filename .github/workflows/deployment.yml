@@ -7,7 +7,8 @@ on:
 
 env:
   IMAGE_NAME: profile-api
-  DEPLOYMENT_NAME: profile-api
+  DEPLOYMENT_NAME: profile-api-deployment
+  CONTAINER_NAME: profile-api
 
 jobs:
   build-and-deploy-local:
@@ -29,8 +30,8 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           echo "Updating deployment with image: ${{ env.IMAGE_TAG }}"
-          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.DEPLOYMENT_NAME }}=${{ env.IMAGE_TAG }}
+          # This command now uses the correct deployment and container names (UPDATED)
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.CONTAINER_NAME }}=${{ env.IMAGE_TAG }}
           
           # Optional: Check the rollout status to ensure it succeeds
           kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
-
