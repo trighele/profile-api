@@ -15,5 +15,11 @@ spec:
       containers:
       - name: profile-api-container
         image: profile-api:v1
+        envFrom:
+        - secretRef:
+            name: profile-api-secrets
+        - configMapRef:
+            name: profile-api-config        
         ports:
         - containerPort: 8000
+
