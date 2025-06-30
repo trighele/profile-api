@@ -27,11 +27,24 @@ jobs:
       - name: Load image into KIND cluster
         run: kind load docker-image ${{ env.IMAGE_TAG }}
 
+      - name: Create/Update K8s Secrets and ConfigMaps
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+        run: |
+          kubectl create secret generic profile-api-secrets \
+            --from-literal=RESEND_API_KEY=${{ env.RESEND_API_KEY }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+            
+          # Create a Kubernetes ConfigMap. This is also idempotent.
+          kubectl create configmap profile-api-config \
+            --from-literal=EMAIL_FROM=${{ env.EMAIL_FROM }} \
+            --dry-run=client -o yaml | kubectl apply -f -        
+
       - name: Deploy to Kubernetes
         run: |
           echo "Updating deployment with image: ${{ env.IMAGE_TAG }}"
-          # This command now uses the correct deployment and container names (UPDATED)
           kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.CONTAINER_NAME }}=${{ env.IMAGE_TAG }}
           
-          # Optional: Check the rollout status to ensure it succeeds
+          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}
           kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
