@@ -12,6 +12,7 @@ env:
   CONTAINER_NAME: profile-api-container
   KUBE_PORT: 3011
   APP_PORT: 4011
+  NAMESPACE: profile-api
 
 jobs:
   build-and-deploy-local:
@@ -21,6 +22,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name of: Apply K8s Manifests
+        run: kubectl apply -f deployment/
+ 
       - name: Build local Docker image
         run: |
           IMAGE_TAG="${{ env.IMAGE_NAME }}:${{ github.sha }}"
@@ -37,29 +41,28 @@ jobs:
         run: |
           kubectl create secret generic profile-api-secrets \
             --from-literal=RESEND_API_KEY=${{ env.RESEND_API_KEY }} \
-            --dry-run=client -o yaml | kubectl apply -f -
+            --dry-run=client -o yaml | kubectl apply -n ${{ env.NAMESPACE }} -f -
             
-          # Create a Kubernetes ConfigMap. This is also idempotent.
           kubectl create configmap profile-api-config \
             --from-literal=EMAIL_FROM=${{ env.EMAIL_FROM }} \
-            --dry-run=client -o yaml | kubectl apply -f -        
+            --dry-run=client -o yaml | kubectl apply -n ${{ env.NAMESPACE }} -f -
 
       - name: Deploy to Kubernetes
         run: |
           echo "Updating deployment with image: ${{ env.IMAGE_TAG }}"
-          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.CONTAINER_NAME }}=${{ env.IMAGE_TAG }}
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} -n ${{ env.NAMESPACE }} ${{ env.CONTAINER_NAME }}=${{ env.IMAGE_TAG }}
           
-          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }}
-          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
+          kubectl rollout restart deployment/${{ env.DEPLOYMENT_NAME }} -n ${{ env.NAMESPACE }}
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} -n ${{ env.NAMESPACE }}
 
       - name: Restart Port-Forward Service
         run: |
           sudo systemctl restart kube-port-forward.service
           
-          echo "✅ Port-forward service has been signaled to restart."
+          echo "Port-forward service has been signaled to restart."
 
       - name: Clean Up Unused Docker Images
         if: always()
         run: |
           echo "--- Cleaning up dangling Docker images ---"
-          docker image prune -a --filter "until=24h" -f        
+          docker image prune -a --filter "until=24h" -f
