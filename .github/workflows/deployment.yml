@@ -55,8 +55,9 @@ jobs:
       - name: Kill Previous Port-Forward
         run: |
           pkill -f "kubectl port-forward service/${{ env.SERVICE_NAME }} ${{ env.APP_PORT }}:${{ env.KUBE_PORT }}" || true
+          echo "Waiting for 5 seconds for the old process to terminate..."
           sleep 5
       
       - name: Start Port-Forward in Background
         run: |
-          nohup kubectl port-forward --address 0.0.0.0 service/${{ env.SERVICE_NAME }} ${{ env.APP_PORT }}:${{ env.KUBE_PORT }} > port-forward.log 2>&1 &
+          nohup kubectl port-forward --address 0.0.0.0 service/${{ env.SERVICE_NAME }} ${{ env.APP_PORT }}:${{ env.KUBE_PORT }} > /dev/null 2>&1 &
