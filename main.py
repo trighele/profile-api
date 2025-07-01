@@ -57,4 +57,4 @@ async def send_email(email_data: EmailData):
 
 @app.get("/")
 async def root():
-    return {"message": "FastAPI Resend Email Sender is running!"}
+    return {"message": "FastAPI Resend Email Sender is running! Final Test."}
