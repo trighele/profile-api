@@ -57,3 +57,9 @@ jobs:
           sudo systemctl restart kube-port-forward.service
           
           echo "✅ Port-forward service has been signaled to restart."
+
+      - name: Clean Up Unused Docker Images
+        if: always()
+        run: |
+          echo "--- Cleaning up dangling Docker images ---"
+          docker image prune -a --filter "until=24h" -f        
