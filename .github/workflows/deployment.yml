@@ -22,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name of: Apply K8s Manifests
+      - name: Apply K8s Manifests
         run: kubectl apply -f deployment/
  
       - name: Build local Docker image
