@@ -90,3 +90,6 @@ Desktop.ini
 # dotenv
 .env
 .env.*
+
+#poetry
+*.lock
